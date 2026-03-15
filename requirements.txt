@@ -1,0 +1,29 @@
+# ВКонтакте
+vkbottle
+# Telegram
+aiogram
+
+# LangChain + GigaChat
+langchain
+langchain-core
+langchain-community
+langchain-gigachat
+langchain-weaviate
+ 
+# Векторная БД
+weaviate-client
+ 
+# База данных
+sqlalchemy
+asyncpg
+psycopg2-binary
+ 
+# Кэш
+redis
+ 
+# Утилиты
+python-dotenv
+docx2txt
+aiohttp
+beautifulsoup4
+# gradio  # для веб-прототипа
