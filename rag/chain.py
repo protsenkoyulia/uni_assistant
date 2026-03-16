@@ -14,16 +14,14 @@ SYSTEM_PROMPT = """
 
 Строго соблюдай следующие правила:
 
-1. Отвечай ТОЛЬКО на основе предоставленного контекста.
-2. Если ответ отсутствует в контексте, сообщи:
+1. Отвечай ТОЛЬКО на основе базы знаний и контекста.
+2. Если ответ отсутствует в базе знаний и контектсе, сообщи:
    "Запрашиваемая информация отсутствует в текущей базе знаний."
 3. Автоматически определи язык запроса пользователя (ru / zh / en).
 4. Отвечай на том же языке, что и запрос.
 5. Используй дружелюбный тон и простые формулировки.
 6. Избегай выдумывания информации.
-7. Используй только знания из базы знаний и контекста.
 8. Избегай личных комментариев.
-9. Если вопрос продолжает предыдущий — ссылайся на него.
 
 Важно:
 - Выполняй рассуждение внутренне.
@@ -39,20 +37,20 @@ def build_rag_chain(vector_db):
         verify_ssl_certs=False,
         temperature=0.3,
         top_p=0.9,
-        max_tokens=1000
+        max_tokens=500
     )
 
     prompt = ChatPromptTemplate.from_messages([
         SystemMessagePromptTemplate.from_template(SYSTEM_PROMPT),
         HumanMessagePromptTemplate.from_template(
-            'Контекст: {context}\nВопрос: {input}\nОтвет:'
+            'Контекст: {context}\nИстория: {history}\nВопрос: {input}\nОтвет:'
         ),
     ])
 
     # MMR — поиск с разнообразием результатов
     retriever = vector_db.as_retriever(
-        search_type='mmr',
-        search_kwargs={'k': 4, 'fetch_k': 8},
+        search_type='similarity',
+        search_kwargs={'k': 6},
     )
 
     stuff_chain = create_stuff_documents_chain(llm, prompt)

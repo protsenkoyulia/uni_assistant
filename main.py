@@ -1,11 +1,10 @@
-# Это должно быть буквально первой исполняемой строкой файла
 import nest_asyncio
-nest_asyncio.apply()
-
 import asyncio
 from pathlib import Path
 from rag.loader import load_documents, split_documents
 from rag.vector_store import create_vector_db, close
+
+nest_asyncio.apply()
 
 
 def init_rag():

@@ -122,7 +122,7 @@ async def translate_handler(message: Message):
     await bot.send_chat_action(chat_id=message.chat.id, action='typing')
 
     try:
-        response = rag_chain.invoke({'input': prompt})
+        response = rag_chain.invoke({'input': prompt, 'history': ""})
         translated = response.get('answer', '').strip()
 
         await message.answer(
@@ -186,27 +186,22 @@ async def main_handler(message: Message):
 
     try:
         context = get_user_context(user_id)
-        recent_context = context[-10:] if context else []
 
         history = ""
-        if recent_context:
-            history = "История диалога (обязательно учитывай):\n"
-            for msg in recent_context:
+        if context:
+            history = "История диалога:\n"
+            for msg in context[-4:]:
                 role = "Студент" if msg['role'] == 'user' else "Ассистент"
                 history += f"{role}: {msg['content']}\n"
-            history += "\n"
 
-        input = f"""{history}
-                       Текущий вопрос студента: {user_text}"""
-
-        response = rag_chain.invoke({'input': input})
+        response = rag_chain.invoke({'input': user_text, 'history': history})
         answer = response.get('answer', 'Не удалось получить ответ')
 
         context.extend([
             {'role': 'user', 'content': user_text},
             {'role': 'assistant', 'content': answer},
         ])
-        save_user_context(user_id, context[-20:])
+        save_user_context(user_id, context[-10:])
 
         await message.answer(answer, reply_markup=get_main_keyboard(lang))
 
