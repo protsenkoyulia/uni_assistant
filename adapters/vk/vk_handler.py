@@ -2,7 +2,7 @@ import ssl
 import aiohttp
 from vkbottle.bot import Bot, Message
 from vkbottle.bot import BotLabeler
-from config import VK_TOKEN
+from core.config import VK_TOKEN
 from rag.vector_store import load_vector_db
 from rag.chain import build_rag_chain
 from services.context_cache import (

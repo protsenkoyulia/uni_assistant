@@ -2,7 +2,7 @@ import time
 import weaviate
 from langchain_weaviate import WeaviateVectorStore
 from langchain_gigachat import GigaChatEmbeddings
-from config import AUTH_KEY_GIGACHAT
+from core.config import AUTH_KEY_GIGACHAT
 
 INDEX_NAME = "KnowledgeBase"
 

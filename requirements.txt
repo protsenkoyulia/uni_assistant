@@ -26,4 +26,7 @@ python-dotenv
 docx2txt
 aiohttp
 beautifulsoup4
-# gradio  # для веб-прототипа
+
+uvicorn
+fastapi
+httpx
