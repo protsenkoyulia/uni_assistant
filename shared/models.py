@@ -8,6 +8,7 @@ class IncomingMessage(BaseModel):
     message_id: Optional[int] = None
     text: str
     lang: Optional[str] = 'en'
+    group_id: Optional[str] = None
 
     @field_validator('user_id', mode='before')
     @classmethod
@@ -20,6 +21,7 @@ class OutgoingMessage(BaseModel):
     user_id: str
     text: str
     lang: str
+    need_group: bool = False
 
     @field_validator('user_id', mode='before')
     @classmethod

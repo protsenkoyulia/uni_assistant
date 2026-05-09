@@ -4,12 +4,17 @@ import asyncio
 
 from core.rag.vector_store import load_vector_db
 from core.rag.chain import build_rag_chain
+from core.services.admin import log_request
 from core.services.context_cache import (
     get_user_language, set_user_language,
     get_user_context, save_user_context,
+    get_user_group, set_user_group,
+    get_cached_schedule, cache_schedule,
     clear_user_context
 )
+from core.services.schedule import get_schedule
 from core.services.translation import translate
+from core.services.faq import search_faq, get_all_faq
 from shared.models import IncomingMessage, OutgoingMessage
 
 app = FastAPI(title="UniHelper Core API")
@@ -32,6 +37,16 @@ async def chat(message: IncomingMessage):
     user_text = message.text.strip()
     lang = message.lang or get_user_language(user_id)
 
+    faq_result = search_faq(user_text, lang)
+    if faq_result:
+        log_request(user_text, faq_result['answer'], lang)
+        return OutgoingMessage(
+            platform=message.platform,
+            user_id=user_id,
+            text=f"{faq_result['question']}\n\n{faq_result['answer']}",
+            lang=lang,
+        )
+
     try:
         context = get_user_context(user_id)
         recent_context = context[-5:] if context else []
@@ -46,6 +61,7 @@ async def chat(message: IncomingMessage):
 
         response = rag_chain.invoke({'input': user_text, 'history': history})
         answer = response.get('answer', 'Не удалось получить ответ')
+        log_request(user_text, answer, lang)
 
         context.extend([
             {'role': 'user', 'content': user_text},
@@ -117,6 +133,68 @@ async def translate_endpoint(message: IncomingMessage):
         raise HTTPException(status_code=500, detail="Ошибка перевода")
 
 
+@app.post('/api/schedule', response_model=OutgoingMessage)
+async def get_schedule_endpoint(message: IncomingMessage):
+    user_id = message.user_id
+    lang = message.lang or get_user_language(user_id)
+
+    provided_group = message.text.strip() if message.text and message.text.strip() else None
+    try:
+        if provided_group:
+            set_user_group(user_id, provided_group)
+
+        group_id = get_user_group(user_id)
+
+        # Если группы нет — просим ввести
+        if not group_id:
+            texts = {
+                'ru': 'Пожалуйста, введите номер вашей учебной группы (например: 5839):',
+                'en': 'Please enter your group number (e.g. 5839):',
+                'zh': '请输入您的组号（例如：5839）：'
+            }
+            return OutgoingMessage(
+                platform=message.platform,
+                user_id=user_id,
+                text=texts.get(lang, texts['ru']),
+                lang=lang,
+                need_group=True
+            )
+
+        schedule_text = get_cached_schedule(group_id)
+        
+        if not schedule_text:
+            schedule_text = await get_schedule(group_id)
+            if schedule_text and "Не удалось" not in schedule_text:
+                cache_schedule(group_id, schedule_text)
+
+        if not schedule_text:
+            schedule_text = "Расписание временно недоступно."
+
+        if lang == 'zh':
+            title = f"{group_id}组的课程表\n\n"
+        elif lang == 'en':
+            title = f"Schedule for group {group_id}\n\n"
+        else:
+            title = f"Расписание для группы {group_id}\n\n"
+
+        return OutgoingMessage(
+            platform=message.platform,
+            user_id=user_id,
+            text=title + schedule_text,
+            lang=lang
+        )
+    except Exception as e:
+        print(f"Ошибка получения расписания: {e}")
+        error_messages = {
+            'ru': 'Не удалось получить расписание. Попробуйте позже.',
+            'en': 'Failed to get schedule. Please try again later.',
+            'zh': '无法获取课程表。请稍后再试。'
+        }
+        raise HTTPException(
+            status_code=500, 
+            detail=error_messages.get(lang, error_messages['ru'])
+        )
+
 @app.post('/api/set_language')
 async def set_lang(data: dict):
     user_id = data.get('user_id')
@@ -125,3 +203,49 @@ async def set_lang(data: dict):
         set_user_language(user_id, lang)
         return {'status': 'success'}
     raise HTTPException(status_code=400, detail='Неверные данные')
+
+@app.post('/api/faq', response_model=OutgoingMessage)
+async def faq_endpoint(message: IncomingMessage):
+    user_id = message.user_id
+    lang = message.lang or get_user_language(user_id)
+    query = message.text.strip()
+
+    result = search_faq(query, lang)
+
+    if result:
+        return OutgoingMessage(
+            platform=message.platform,
+            user_id=user_id,
+            text=f"{result['question']}\n\n{result['answer']}",
+            lang=lang,
+        )
+
+    all_faq = get_all_faq(lang)
+    if not all_faq:
+        texts = {
+            'ru': 'FAQ пока пуст.',
+            'en': 'FAQ is empty.',
+            'zh': 'FAQ 暂无内容。',
+        }
+        return OutgoingMessage(
+            platform=message.platform,
+            user_id=user_id,
+            text=texts.get(lang, texts['ru']),
+            lang=lang,
+        )
+
+    headers = {'ru': 'Частые вопросы:', 'en': 'FAQ:', 'zh': '常见问题：'}
+    text = headers.get(lang, headers['ru']) + "\n\n"
+    for item in all_faq:
+        text += f"• {item['question']}\n"
+
+    return OutgoingMessage(
+        platform=message.platform,
+        user_id=user_id,
+        text=text,
+        lang=lang,
+    )
+
+@app.get('/api/faq/all')
+async def faq_all(lang: str = "ru"):
+    return get_all_faq(lang)

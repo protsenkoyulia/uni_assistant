@@ -1,0 +1,121 @@
+[
+  {
+    "id": 1,
+    "keywords": [
+      "заселиться в общежитие",
+      "заселение общежитие",
+      "получить комната",
+      "dorm",
+      "宿舍"
+    ],
+    "question": {
+      "ru": "Как заселиться в общежитие?",
+      "en": "How to move into the dormitory?",
+      "zh": "如何入住宿舍？"
+    },
+    "answer": {
+      "ru": "Для заселения нужно получить направление в международном отделе (корп. 3, ауд. 3418). При себе иметь паспорт и студенческий билет. Заселение — после подписания договора с комендантом.",
+      "en": "To move in, get a referral from the International Office (building 3, room 3418). Bring your passport and student ID. Check-in is after signing the contract with the dormitory manager.",
+      "zh": "入住前需在国际学生办公室（3号楼3418室）获得入住许可。请携带护照和学生证。签署合同后方可入住。"
+    }
+  },
+  {
+    "id": 2,
+    "keywords": [
+      "где расписание",
+      "когда пары",
+      "когда у меня занятия",
+      "schedule",
+      "课程表"
+    ],
+    "question": {
+      "ru": "Где посмотреть расписание?",
+      "en": "Where can I find the schedule?",
+      "zh": "在哪里查看课程表？"
+    },
+    "answer": {
+      "ru": "Расписание доступно на сайте: https://digital.etu.ru/schedule/ — выбери факультет и курс. Также можно использовать команду /schedule в этом боте.",
+      "en": "Schedule is available at: https://digital.etu.ru/schedule/ — select faculty and course. You can also use /schedule command in this bot.",
+      "zh": "课程表请访问：https://digital.etu.ru/schedule/ — 选择院系和年级。也可以在机器人中使用 /schedule 命令。"
+    }
+  },
+  {
+    "id": 3,
+    "keywords": [
+      "включить wifi",
+      "подключить интернет",
+      "подключиться к wi-fi",
+      "нет сети",
+      "internet",
+      "网络",
+      "网"
+    ],
+    "question": {
+      "ru": "Как подключиться к Wi-Fi в общежитии?",
+      "en": "How to connect to Wi-Fi in the dormitory?",
+      "zh": "如何连接宿舍Wi-Fi？"
+    },
+    "answer": {
+      "ru": "Wi-Fi в общежитии подключается через портал авторизации. Логин и пароль выдаёт комендант при заселении. Сеть называется ETU-Student.",
+      "en": "Connect to ETU-Student network and log in through the authorization portal. Login and password are provided by the dormitory manager.",
+      "zh": "连接ETU-Student网络，通过授权门户登录。账号密码由宿舍管理员在入住时提供。"
+    }
+  },
+  {
+    "id": 4,
+    "keywords": [
+      "где международный отдел",
+      "where is international office",
+      "国际部",
+      "где иностранный отдел"
+    ],
+    "question": {
+      "ru": "Где находится международный отдел?",
+      "en": "Where is the International Office?",
+      "zh": "国际学生办公室在哪里？"
+    },
+    "answer": {
+      "ru": "Международный студенческий офис: корпус №3, 4 этаж, аудитория 3418. Email: master@etu.ru. Тел: +7 (812) 346-44-81.",
+      "en": "International Student Office: Building 3, 4th floor, room 3418. Email: master@etu.ru. Phone: +7 (812) 346-44-81.",
+      "zh": "国际学生办公室：3号楼4层3418室。邮箱：master@etu.ru。电话：+7 (812) 346-44-81。"
+    }
+  },
+  {
+    "id": 5,
+    "keywords": [
+      "получить регистрация",
+      "встать на миграционный учёт",
+      "registration",
+      "登记",
+      "注册"
+    ],
+    "question": {
+      "ru": "Как встать на миграционный учёт?",
+      "en": "How to register with migration authorities?",
+      "zh": "如何进行移民登记？"
+    },
+    "answer": {
+      "ru": "В течение 7 рабочих дней после прибытия нужно встать на миграционный учёт. Университет помогает с оформлением — обратитесь в международный отдел (корп. 3, ауд. 3418) в день приезда.",
+      "en": "Within 7 working days of arrival you must register with migration authorities. The university helps with this — contact the International Office (building 3, room 3418) on your arrival day.",
+      "zh": "抵达后7个工作日内必须进行移民登记。大学会提供帮助——请在抵达当天前往国际办公室（3号楼3418室）。"
+    }
+  },
+  {
+    "id": 6,
+    "keywords": [
+      "сим карта купить",
+      "оформить связь",
+      "make a SIM card"
+    ],
+    "question": {
+      "ru": "Как оформить сим-карту иностранцу?",
+      "en": "Как оформить сим-карту иностранцу?",
+      "zh": "Как оформить сим-карту иностранцу?"
+    },
+    "answer": {
+      "ru": "Для оформления сим-карты иностранцу в РФ в 2026 году необходимо иметь паспорт с нотариальным переводом, СНИЛС, подтвержденную учетную запись на Госуслугах и биометрию (сдается в банке или через приложение). Оформить договор можно в офисах операторов (МТС, Билайн, Мегафон, T2), предоставив эти данные и указав IMEI телефона.",
+      "en": "To obtain a SIM card in Russia in 2026, foreigners must have a passport with a notarized translation, a SNILS (Individual Insurance Account Number), a verified Gosuslugi account, and biometric data (submitted at a bank or through an app). You can sign the agreement at operator offices (MTS, Beeline, Megafon, T2) by providing this information and your phone's IMEI.",
+      "zh": "2026年，外国人在俄罗斯办理SIM卡需要提供护照及公证翻译件、个人保险账号（SNILS）、已验证的Gosuslugi账户以及生物识别数据（可通过银行或应用程序提交）。您可以在运营商营业厅（MTS、Beeline、Megafon、T2）提供上述信息和手机IMEI码后签署协议。"
+    }
+  }
+]

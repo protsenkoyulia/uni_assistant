@@ -1,4 +1,5 @@
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, Router
+from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.filters import Command, or_f
 from aiogram import F
 from aiogram.types import Message
@@ -10,10 +11,15 @@ from core.services.context_cache import (
 )
 from shared.models import IncomingMessage
 from adapters.tg.keyboards import get_main_keyboard, get_language_keyboard
+from adapters.tg.admin_handlers import router as admin_router
+
 
 
 bot = Bot(token=TG_TOKEN)
-dp = Dispatcher()
+dp = Dispatcher(storage=MemoryStorage())
+
+main_router = Router()
+
 
 CORE_API_URL = "http://127.0.0.1:8001"
 
@@ -27,7 +33,7 @@ async def send_to_core(endpoint: str, message: IncomingMessage):
         return response.json()
 
 
-@dp.message(Command('start'))
+@main_router.message(Command('start'))
 async def start_handler(message: Message):
     await message.answer(
         'Привет! / Hello! / 你好!\n\n'
@@ -38,10 +44,7 @@ async def start_handler(message: Message):
     )
 
 
-@dp.message(or_f(
-    F.text.in_(["Помощь", "帮助", "Help"]),
-    Command('help')
-))
+@main_router.message(or_f(F.text.in_(["Помощь", "帮助", "Help"]), Command('help')))
 async def help_handler(message: Message):
     lang = get_user_language(message.from_user.id)
     if lang == 'ru':
@@ -77,7 +80,7 @@ async def help_handler(message: Message):
     )
 
 
-@dp.message(or_f(
+@main_router.message(or_f(
         F.text.in_(["Язык", "语言", "Language"]),
         Command('language')
 ))
@@ -88,7 +91,7 @@ async def language_command(message: Message):
     )
 
 
-@dp.message(or_f(
+@main_router.message(or_f(
     F.text.in_(["Очистить", "清空", "Clear"]),
     Command('clear')
 ))
@@ -101,7 +104,7 @@ async def clear_handler(message: Message):
                          reply_markup=get_main_keyboard(lang))
 
 
-@dp.message(or_f(
+@main_router.message(or_f(
     F.text.in_(["Перевод", "翻译", "Translate"]),
     Command('translate')
 ))
@@ -169,7 +172,42 @@ async def translate_handler(message: Message):
         await message.answer(msg, reply_markup=get_main_keyboard(lang))
 
 
-@dp.message(lambda m: m.text == '🇷🇺 Русский')
+@main_router.message(or_f(
+    F.text.in_(["Расписание", "课程表", "Schedule"]),
+    Command('schedule')
+))
+async def schedule_handler(message: Message):
+    user_id = message.from_user.id
+    lang = get_user_language(user_id)
+
+    await bot.send_chat_action(chat_id=message.chat.id, action='typing')
+
+    try:
+        result = await send_to_core('schedule', IncomingMessage(
+            platform='telegram',
+            user_id=user_id,
+            text="",
+            lang=lang,
+        ))
+        await message.answer(
+            result['text'],
+            reply_markup=get_main_keyboard(lang)
+        )
+
+    except Exception as e:
+        print(f"Ошибка расписания: {e}")
+        error_msg = {
+            'ru': 'Не удалось получить расписание',
+            'en': 'Failed to fetch schedule',
+            'zh': '无法获取课程表'
+        }
+        await message.answer(
+            error_msg.get(lang, error_msg['en']),
+            reply_markup=get_main_keyboard(lang)
+        )
+
+
+@main_router.message(lambda m: m.text == '🇷🇺 Русский')
 async def set_ru(message: Message):
     set_user_language(message.from_user.id, 'ru')
     await message.answer(
@@ -185,7 +223,7 @@ async def set_ru(message: Message):
         )
 
 
-@dp.message(lambda m: m.text == '🇨🇳 中文')
+@main_router.message(lambda m: m.text == '🇨🇳 中文')
 async def set_zh(message: Message):
     set_user_language(message.from_user.id, 'zh')
     await message.answer(
@@ -201,7 +239,7 @@ async def set_zh(message: Message):
         )
 
 
-@dp.message(lambda m: m.text == '🇬🇧 English')
+@main_router.message(lambda m: m.text == '🇬🇧 English')
 async def set_en(message: Message):
     set_user_language(message.from_user.id, 'en')
     await message.answer(
@@ -217,7 +255,7 @@ async def set_en(message: Message):
         )
 
 
-@dp.message()
+@main_router.message()
 async def main_handler(message: Message):
     user_id = message.from_user.id
     user_text = message.text.strip()
@@ -230,6 +268,22 @@ async def main_handler(message: Message):
         '🇷🇺 Русский', '🇨🇳 中文', '🇬🇧 English',
     ]:
         return
+
+
+    if user_text and user_text.isdigit() or (len(user_text) <= 10 and any(c.isdigit() for c in user_text)):
+        try:
+            result = await send_to_core('schedule', IncomingMessage(
+                platform='telegram',
+                user_id=user_id,
+                text=user_text,  
+                lang=lang,
+            ))
+            
+            if not result.get('need_group'):
+                await message.answer(result['text'], reply_markup=get_main_keyboard(lang))
+                return
+        except:
+            pass
 
     await bot.send_chat_action(chat_id=message.chat.id, action='typing')
 
@@ -260,6 +314,9 @@ async def main_handler(message: Message):
         await message.answer(errors.get(lang, errors['en']),
                              reply_markup=get_main_keyboard(lang))
 
+
+dp.include_router(admin_router)
+dp.include_router(main_router)
 
 async def start_bot():
     await dp.start_polling(bot)

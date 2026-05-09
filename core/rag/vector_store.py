@@ -6,22 +6,15 @@ from core.config import AUTH_KEY_GIGACHAT
 
 INDEX_NAME = "KnowledgeBase"
 
-_client = None
 
 
 def get_weaviate_client():
-    global _client
-    if _client is None or not _client.is_connected():
-        _client = weaviate.connect_to_local(
-            host="localhost",
-            port=8080,
-        )
-        _wait_for_weaviate(_client)
-    return _client
+    client = weaviate.connect_to_local(host="localhost", port=8080)
+    _wait_for_weaviate(client)
+    return client
 
 
 def _wait_for_weaviate(client, retries: int = 10, delay: float = 2.0):
-    """Ждёт пока Weaviate полностью запустится."""
     for attempt in range(retries):
         try:
             if client.is_ready():
@@ -68,7 +61,6 @@ def load_vector_db() -> WeaviateVectorStore:
 
 
 def close():
-    """Вызвать при завершении работы бота."""
     global _client
     if _client is not None and _client.is_connected():
         _client.close()

@@ -23,8 +23,25 @@ def get_user_language(id: int) -> str:
 def set_user_language(id: int, lang: str):
     r.set(f'lang:{id}', lang)
 
+def get_user_group(user_id: int) -> str:
+    return r.get(f'group:{user_id}')
+
+
+def set_user_group(user_id: int, group_id: str):
+    user_id = str(user_id)
+    group_id = group_id.strip()
+    r.set(f'group:{user_id}', group_id, ex=60*60*24*30)
+
+
+def get_cached_schedule(group_id: str) -> str:
+    return r.get(f'schedule:{group_id}')
+
+def cache_schedule(group_id: str, schedule_text: str, ttl_seconds: int = 43200):
+    r.setex(f'schedule:{group_id}', ttl_seconds, schedule_text)
 
 def clear_user_context(user_id: int):
     r.delete(f'context:{user_id}')
     r.delete(f'lang:{user_id}')
+    r.delete(f'group:{user_id}')
+    r.delete(f'schedule:{user_id}')
     print(f"Контекст очищен для пользователя {user_id}")
